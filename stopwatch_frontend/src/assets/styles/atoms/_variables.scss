@@ -1,0 +1,53 @@
+// --- 1. LAYOUT DIMENSIONS ---
+$nav-height: 60px;
+$rail-width: 60px;
+$drawer-width: 320px;
+
+// --- 2. COLORS (Brand & UI States) ---
+$color-info:    #3182ce; // Brand Blue
+$color-success: #48bb78;
+$color-warning: #ecc94b;
+$color-danger:  #f56565;
+
+// Backgrounds
+$bg-dark:       #0a0b10; // Tiefstes Schwarz/Blau
+$color-bg-main: #0f111a;
+$color-rail-bg: #141622;
+$color-drawer-bg: #1a1d2c;
+$color-nav-bg:  #141622;
+
+// Text Colors
+$text-main:     #ffffff;
+$text-muted:    #a0aec0;
+$text-dark:     #1a202c;
+
+// --- 3. SPACING SYSTEM (8px Grid) ---
+$space-xs: 4px;
+$space-sm: 8px;
+$space-md: 16px;
+$space-lg: 24px;
+$space-xl: 32px;
+
+// --- 4. BORDERS & RADIUS ---
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-color: rgba(255, 255, 255, 0.05);
+
+// --- 5. ANIMATION CONSTANTS ---
+$transition-speed: 0.3s;
+$transition-curve: cubic-bezier(0.4, 0, 0.2, 1);
+
+// --- 6. Z-INDEX SYSTEM ---
+$z-index-nav: 1000;
+$z-index-sidebar: 1500;
+$z-index-modal: 2000;
+
+// --- 7. CSS CUSTOM PROPERTIES (:root) ---
+// Ermöglicht Zugriff via JavaScript oder CSS-Variablen im Browser
+:root {
+    --color-info: #{$color-info};
+    --nav-height: #{$nav-height};
+    --rail-width: #{$rail-width};
+    --drawer-width: #{$drawer-width};
+    --transition-speed: #{$transition-speed};
+}

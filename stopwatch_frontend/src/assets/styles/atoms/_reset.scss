@@ -1,0 +1,86 @@
+@use 'variables' as *;
+
+@layer base {
+    // 1. HTML & Body App-Feeling
+    html, body {
+        @apply h-full w-full overflow-hidden select-none; 
+        // select-none verhindert versehentliches Markieren von Text im UI
+    }
+
+    body {
+        // Tailwind nutzt automatisch einen modernen System-Font-Stack (font-sans)
+        @apply antialiased text-white bg-bg-dark leading-normal font-sans;
+        
+        // Schriftglättung (Profi-Look)
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    // 2. Elm-Root Container
+    #elm-app {
+        @apply h-full w-full;
+    }
+
+    // 3. Formular-Elemente & Buttons
+    // Tailwind Preflight setzt diese bereits weitgehend zurück, 
+    // wir verfeinern nur die App-Spezifika
+    button, input, textarea, select {
+        @apply font-inherit m-0 p-0 bg-transparent border-none outline-none;
+    }
+
+    button {
+        @apply cursor-pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    // 4. Fokus-Styles (Barrierefreiheit)
+    // Tailwind steuert das jetzt über Utility-Klassen, 
+    // aber wir setzen den globalen Standard hier fest.
+    :focus:not(:focus-visible) {
+        @apply outline-none;
+    }
+
+    *:focus-visible {
+        // Nutzt dein Brand-Info-Blau aus der tailwind.config.js
+        @apply outline-2 outline-info outline-offset-2;
+    }
+
+    // 5. Scrollbar-Styling (Optional, aber wichtig für den "Pro"-Look)
+    ::-webkit-scrollbar {
+        @apply w-1 h-1;
+    }
+    ::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        @apply bg-white/10 rounded-full hover:bg-white/20;
+    }
+
+    /* SR-ONLY: Versteckt Elemente optisch, hält sie aber für 
+    Screenreader und SEO-Crawler zugänglich.
+    */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+
+    /* Erlaubt es, ein sr-only Element wieder anzuzeigen, wenn es fokussiert wird 
+    (nützlich für "Skip to Content" Links) */
+    .sr-only-focusable:active, 
+    .sr-only-focusable:focus {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        overflow: visible;
+        clip: auto;
+        white-space: normal;
+    }
+}

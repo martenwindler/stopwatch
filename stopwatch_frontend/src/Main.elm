@@ -1,0 +1,209 @@
+module Main exposing (main)
+
+import Browser
+import Decoders
+import Html exposing (..)
+import Json.Decode as Decode
+import Ports
+import Task
+import Time
+import Types exposing (..)
+
+-- Layout & Organism Imports
+import View.Layouts.MainLayout as MainLayout
+
+
+-- --- PROGRAM ---
+
+
+main : Program Flags Model Msg
+main =
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+
+-- --- INIT ---
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( { state = Stopped
+      , currentTime = 0.0
+      , startTime = Nothing
+      , accumulatedTime = 0.0
+      , laps = []
+      , title = ""
+      , sidebarOpen = False
+      , nightMode = False
+      , timeFormat = FormatTwoDecimals
+      , fontSizeId = 1
+      }
+    , Cmd.none
+    )
+
+
+-- --- UPDATE ---
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        -- Stopwatch Logic
+        StartStopwatch ->
+            ( model, Time.now |> Task.perform StartAt )
+
+        StartAt time ->
+            ( { model | state = Running, startTime = Just time }, Cmd.none )
+
+        PauseStopwatch ->
+            let
+                -- Die Zeit, die seit dem letzten Start vergangen ist
+                currentSessionTime = model.currentTime
+                
+                -- Die absolute Gesamtzeit (vorherige Intervalle + aktuelles)
+                totalTimeAtStop =
+                    model.accumulatedTime + currentSessionTime
+
+                -- Wir holen uns die Gesamtzeit der letzten aufgenommenen Runde
+                lastLapTotal =
+                    model.laps 
+                        |> List.head 
+                        |> Maybe.map .totalTime 
+                        |> Maybe.withDefault 0
+
+                -- Wir erstellen die finale Runde für diesen Stopp
+                finalLap =
+                    { id = List.length model.laps + 1
+                    , lapTime = totalTimeAtStop - lastLapTotal
+                    , totalTime = totalTimeAtStop
+                    }
+
+                updatedLaps =
+                    finalLap :: model.laps
+            in
+            ( { model 
+                | state = Paused
+                , accumulatedTime = totalTimeAtStop
+                , currentTime = 0
+                , startTime = Nothing
+                , laps = updatedLaps 
+              }
+            , Cmd.batch 
+                [ Ports.setPageTitle "Pausiert - Stoppuhr"
+                , Ports.saveLaps (Decoders.encodeLapList updatedLaps)
+                ]
+            )
+
+        ResumeStopwatch ->
+            ( model, Time.now |> Task.perform StartAt )
+
+        ResetStopwatch ->
+            ( { model | state = Stopped, currentTime = 0, accumulatedTime = 0, startTime = Nothing, laps = [] }
+            , Ports.saveLaps (Decoders.encodeLapList [])
+            )
+
+        TakeLap ->
+            let
+                totalTime =
+                    model.accumulatedTime + model.currentTime
+
+                lastLapTotal =
+                    model.laps |> List.head |> Maybe.map .totalTime |> Maybe.withDefault 0
+
+                newLap =
+                    { id = List.length model.laps + 1
+                    , lapTime = totalTime - lastLapTotal
+                    , totalTime = totalTime
+                    }
+
+                updatedLaps =
+                    newLap :: model.laps
+            in
+            ( { model | laps = updatedLaps }
+            , Ports.saveLaps (Decoders.encodeLapList updatedLaps)
+            )
+
+        Tick time ->
+            case model.startTime of
+                Just start ->
+                    let
+                        diff =
+                            toFloat (Time.posixToMillis time - Time.posixToMillis start)
+                    in
+                    ( { model | currentTime = diff }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        -- UI State
+        ToggleSidebar ->
+            ( { model | sidebarOpen = not model.sidebarOpen }, Cmd.none )
+
+        ToggleNightMode ->
+            let
+                newMode =
+                    not model.nightMode
+            in
+            ( { model | nightMode = newMode }
+            , Ports.saveConfig (Decoders.encodePersistentState { model | nightMode = newMode })
+            )
+
+        SetTimeFormat format ->
+            ( { model | timeFormat = format }
+            , Ports.saveConfig (Decoders.encodePersistentState { model | timeFormat = format })
+            )
+
+        AdjustFontSize delta ->
+            ( { model | fontSizeId = clamp 0 3 (model.fontSizeId + delta) }, Cmd.none )
+
+        SetPageTitle title ->
+            ( model, Ports.setPageTitle title )
+
+        -- Inbound from Ports (JS -> Elm)
+        ReceiveConfig rawValue ->
+            case Decode.decodeValue Decoders.decodeConfig rawValue of
+                Ok config ->
+                    ( { model
+                        | nightMode = config.nightMode
+                        , timeFormat = config.timeFormat
+                        , fontSizeId = config.fontSizeId
+                      }
+                    , Cmd.none
+                    )
+
+                Err _ ->
+                    ( model, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
+
+
+-- --- SUBSCRIPTIONS ---
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    let
+        baseSubs =
+            [ Ports.configReceiver ReceiveConfig ]
+
+        activeSubs =
+            if model.state == Running then
+                [ Time.every 33 Tick ]
+
+            else
+                []
+    in
+    Sub.batch (baseSubs ++ activeSubs)
+
+
+-- --- VIEW ---
+
+
+view : Model -> Html Msg
+view model =
+    MainLayout.view model

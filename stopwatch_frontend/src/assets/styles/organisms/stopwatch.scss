@@ -1,0 +1,140 @@
+/* --- STOPWATCH ORGANISM STYLES --- */
+
+.stopwatch-display-container {
+    padding: 60px 0; // Etwas kompakter für die Tabelle darunter
+    text-align: center;
+    display: block !important;
+    visibility: visible !important;
+
+    .main-time {
+        font-family: 'clockicons', sans-serif !important; // Wichtig für Digital-Look
+        font-size: 128px;
+        line-height: 1;
+        display: inline-block;
+    }
+    
+    .msec-time {
+        font-family: 'clockicons', sans-serif !important;
+        font-size: 51px;
+        vertical-align: baseline;
+        position: relative;
+        top: -4px;
+        margin-left: 5px;
+    }
+}
+
+.main-title {
+    font-weight: 300;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#pnl-set-timer {
+    margin-top: 30px;
+    display: block !important;
+    visibility: visible !important;
+    text-align: center;
+    
+    .btn {
+        display: inline-block !important; // Verhindert Verschwinden durch Bootstrap
+        margin: 5px 5px !important;
+        min-width: 110px;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+}
+
+/* --- TABELLEN RECOVERY & STYLING --- */
+
+// Wir erzwingen die Anzeige, falls Bootstrap .table-responsive oder IDs ausblendet
+.table-responsive, 
+#row-laps {
+    display: block !important;
+    visibility: visible !important;
+    margin-top: 30px;
+    width: 100%;
+    clear: both;
+}
+
+.table-laps {
+    display: table !important; // Bootstrap 3 Reset
+    width: 100% !important;
+    max-width: 100%;
+    background-color: transparent !important;
+    border-collapse: collapse !important;
+    margin-bottom: 40px;
+    
+    // Header Styling
+    thead th {
+        border-bottom: 2px solid #ddd !important;
+        border-top: 0 !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: #888;
+        padding: 12px 8px !important;
+        text-align: center;
+    }
+
+    // Body Zellen
+    tbody td {
+        border-top: 1px solid #eee !important;
+        color: var(--p2-text-main) !important;
+        padding: 15px 8px !important;
+        text-align: center;
+        vertical-align: middle;
+        font-variant-numeric: tabular-nums; // Verhindert Springen der Zahlen
+    }
+
+    // Zeilen-Highlight (Optional)
+    tbody tr:hover {
+        background-color: rgba(0,0,0, 0.02);
+    }
+}
+
+/* --- DARK MODE SUPPORT --- */
+
+.dark-theme {
+    .panel {
+        background-color: #111 !important;
+        border-color: #333 !important;
+    }
+
+    .colored {
+        color: #FF9500 !important; // Webuhr Orange
+    }
+
+    .main-title {
+        color: #eee;
+    }
+
+    .table-laps {
+        thead th {
+            border-bottom-color: #444 !important;
+            color: #999;
+        }
+        
+        tbody td {
+            border-top-color: #222 !important;
+            color: #eee !important;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(255,255,255, 0.05);
+        }
+    }
+    
+    // Falls die Buttons im Darkmode zu dunkel sind
+    .btn-default {
+        background-color: #333;
+        border-color: #444;
+        color: #fff;
+    }
+}
+
+/* Print-Fix: Falls die Tabelle beim Testen verschwindet */
+@media print {
+    .table-laps {
+        display: table !important;
+    }
+}
