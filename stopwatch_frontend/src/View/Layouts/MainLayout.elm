@@ -6,6 +6,7 @@ import Types exposing (Model, Msg)
 import View.Organisms.Navbar as Navbar
 import View.Organisms.Sidebar as Sidebar
 import View.Organisms.StopWatchPanel as StopWatchPanel
+import View.Organisms.Clock as Clock
 import View.Organisms.Table as Table
 
 

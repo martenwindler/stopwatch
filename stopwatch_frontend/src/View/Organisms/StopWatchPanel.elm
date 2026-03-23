@@ -5,7 +5,7 @@ import Html.Attributes exposing (class, id)
 import Types exposing (..)
 import View.Atoms.Buttons as Buttons
 import View.Molecules.StopWatchDisplay as Display
-
+import View.Organisms.Clock as Clock
 
 view : Model -> Html Msg
 view model =
@@ -16,6 +16,8 @@ view model =
         [ div [ class "panel-body relative-container" ]
             [ div [ class "text-center stopwatch-display-container", id "pnl-time" ]
                 [ Display.view totalTime model.timeFormat ]
+
+            , Clock.view model
 
             , h1 [ id "lbl-title", class "colored main-title" ] [ text model.title ]
 
@@ -30,13 +32,13 @@ viewControls model =
     case model.state of
         Stopped ->
             [ -- Runde Button anzeigen, aber deaktivieren
-              Buttons.actionDisabled "Runde" "btn-primary" True NoOp
+              Buttons.actionDisabled "Round" "btn-primary" True NoOp
             , Buttons.action "Start" "btn-alt3" StartStopwatch 
             ]
 
         Running ->
-            [ Buttons.action "Runde" "btn-primary" TakeLap
-            , Buttons.action "Stopp" "btn-danger" PauseStopwatch
+            [ Buttons.action "Round" "btn-primary" TakeLap
+            , Buttons.action "Stop" "btn-danger" PauseStopwatch
             ]
 
         Paused ->

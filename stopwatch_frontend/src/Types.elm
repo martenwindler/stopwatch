@@ -3,6 +3,20 @@ module Types exposing (..)
 import Json.Decode as Decode
 import Time
 
+-- --- CLOCK CONFIG ---
+
+{-| Speichert die aktuell gewählten CSS-Stile für die analoge Uhr.
+-}
+type alias ClockConfig =
+    { hour : String
+    , hourText : String
+    , hourDisplay : String
+    , minute : String
+    , minuteDisplay : String
+    , minuteText : String
+    , hand : String
+    }
+
 -- --- MODEL ---
 
 type alias Model =
@@ -16,13 +30,14 @@ type alias Model =
     , nightMode : Bool
     , timeFormat : TimeFormat
     , fontSizeId : Int
+    , clockConfig : ClockConfig -- Hinzugefügt für die Analog-Uhr
     }
 
 type alias Flags =
     { backendUrl : String -- Bleibt für die Struktur erhalten, falls benötigt
     }
 
--- --- STOPOWATCH TYPES ---
+-- --- STOPWATCH TYPES ---
 
 type RunningState
     = Stopped
@@ -62,3 +77,5 @@ type Msg
     | SetPageTitle String    -- Falls wir den Port manuell triggern
     -- Inbound Ports
     | ReceiveConfig Decode.Value
+    -- Analog Clock Style Logic
+    | CycleClockStyle String -- Wechselt durch die Stile im Chooser

@@ -16,14 +16,14 @@ view laps format =
                     [ table [ id "tbl-laps", class "center table-laps" ]
                         [ thead []
                             [ tr []
-                                [ th [ class "text-center" ] [ text "Runde" ]
-                                , th [ class "text-center" ] [ text "Zeit" ]
-                                , th [ class "text-center" ] [ text "Gesamte Zeitdauer" ]
+                                [ th [ class "text-center" ] [ text "Round" ]
+                                , th [ class "text-center" ] [ text "Time" ]
+                                , th [ class "text-center" ] [ text "Total time-lapse" ]
                                 ]
                             ]
                         , tbody [] 
                             (if List.isEmpty laps then
-                                [ tr [] [ td [ colspan 3, class "text-muted", id "no-laps-hint" ] [ text "Noch keine Runden aufgezeichnet" ] ] ]
+                                [ tr [] [ td [ colspan 3, class "text-muted", id "no-laps-hint" ] [ text "No time-laps recorded" ] ] ]
                              else
                                 List.map (viewLapRow format) laps
                             )

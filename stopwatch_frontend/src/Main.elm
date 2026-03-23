@@ -41,10 +41,18 @@ init flags =
       , nightMode = False
       , timeFormat = FormatTwoDecimals
       , fontSizeId = 1
+      , clockConfig = 
+            { hour = "text"              -- Geändert von pill
+            , hourText = "small"          -- Geändert von large
+            , hourDisplay = "all"
+            , minute = "line"
+            , minuteDisplay = "fine"      -- Geändert von fine-2
+            , minuteText = "inside"       -- Geändert von outside
+            , hand = "hollow"
+            }
       }
     , Cmd.none
     )
-
 
 -- --- UPDATE ---
 
@@ -93,7 +101,7 @@ update msg model =
                 , laps = updatedLaps 
               }
             , Cmd.batch 
-                [ Ports.setPageTitle "Pausiert - Stoppuhr"
+                [ Ports.setPageTitle "Paused - Stopwatch"
                 , Ports.saveLaps (Decoders.encodeLapList updatedLaps)
                 ]
             )
@@ -103,7 +111,10 @@ update msg model =
 
         ResetStopwatch ->
             ( { model | state = Stopped, currentTime = 0, accumulatedTime = 0, startTime = Nothing, laps = [] }
-            , Ports.saveLaps (Decoders.encodeLapList [])
+            , Cmd.batch 
+                [ Ports.saveLaps (Decoders.encodeLapList [])
+                , Ports.setPageTitle "Stopwatch" -- Reset to default
+                ]
             )
 
         TakeLap ->
@@ -133,8 +144,13 @@ update msg model =
                     let
                         diff =
                             toFloat (Time.posixToMillis time - Time.posixToMillis start)
+                        
+                        totalTime = 
+                            model.accumulatedTime + diff
                     in
-                    ( { model | currentTime = diff }, Cmd.none )
+                    ( { model | currentTime = diff }
+                    , Ports.setPageTitle (formatTitleTime totalTime) 
+                    )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -178,6 +194,32 @@ update msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
+        CycleClockStyle category ->
+            let
+                config = model.clockConfig
+
+                -- Helper to find the next item in a list (the "rotation" logic)
+                cycle current options =
+                    let
+                        idx = List.indexedMap (\i v -> (i, v)) options
+                            |> List.filter (\(_, v) -> v == current)
+                            |> List.head
+                            |> Maybe.map Tuple.first
+                            |> Maybe.withDefault 0
+                        nextIdx = remainderBy (List.length options) (idx + 1)
+                    in
+                    List.drop nextIdx options |> List.head |> Maybe.withDefault current
+            in
+            case category of
+                "hour" -> ({ model | clockConfig = { config | hour = cycle config.hour [ "text", "text-quarters", "pill" ] } }, Cmd.none)
+                "hour-text" -> ({ model | clockConfig = { config | hourText = cycle config.hourText [ "large", "small" ] } }, Cmd.none)
+                "hour-display" -> ({ model | clockConfig = { config | hourDisplay = cycle config.hourDisplay [ "all", "quarters", "none" ] } }, Cmd.none)
+                "minute" -> ({ model | clockConfig = { config | minute = cycle config.minute [ "line", "dot" ] } }, Cmd.none)
+                "minute-display" -> ({ model | clockConfig = { config | minuteDisplay = cycle config.minuteDisplay [ "fine", "fine-2", "coarse", "major", "none" ] } }, Cmd.none)
+                "minute-text" -> ({ model | clockConfig = { config | minuteText = cycle config.minuteText [ "inside", "outside", "none" ] } }, Cmd.none)
+                "hand" -> ({ model | clockConfig = { config | hand = cycle config.hand [ "normal", "hollow" ] } }, Cmd.none)
+                _ -> ( model, Cmd.none )
+
         NoOp ->
             ( model, Cmd.none )
 
@@ -207,3 +249,18 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     MainLayout.view model
+
+
+
+-- Add this to the bottom of Main.elm or near your other helpers
+formatTitleTime : Float -> String
+formatTitleTime ms =
+    let
+        totalSeconds = floor (ms / 1000)
+        minutes = remainderBy 60 (totalSeconds // 60)
+        seconds = remainderBy 60 totalSeconds
+        msec = floor (ms - (toFloat (floor ms // 1000) * 1000))
+        
+        pad n = String.padLeft 2 '0' (String.fromInt n)
+    in
+    pad minutes ++ ":" ++ pad seconds ++ "." ++ String.padLeft 2 '0' (String.fromInt (msec // 10))
